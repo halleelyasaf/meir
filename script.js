@@ -255,151 +255,7 @@ document.querySelectorAll('.article-card').forEach(card => {
     });
   });
 });
-// ===== Automatic GitHub PR Generator =====
-const openModalBtn = document.getElementById('openArticleModalBtn');
-const closeModalBtn = document.getElementById('closeArticleModalBtn');
-const articleModal = document.getElementById('articleModal');
-const createArticleForm = document.getElementById('createArticleForm');
-const ghStatusMessage = document.getElementById('ghStatusMessage');
 
-if (openModalBtn && articleModal) {
-  openModalBtn.addEventListener('click', () => articleModal.classList.add('open'));
-  closeModalBtn.addEventListener('click', () => articleModal.classList.remove('open'));
-}
-
-if (createArticleForm) {
-  createArticleForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    // 1. Get or prompt for GitHub Fine-Grained Token
-    let token = localStorage.getItem('gh_pat_token');
-    if (!token) {
-      token = prompt("הזן GitHub Personal Access Token עם הרשאות Contents & Pull Requests:");
-      if (!token) return;
-      localStorage.setItem('gh_pat_token', token);
-    }
-
-    const submitBtn = document.getElementById('submitArticleBtn');
-    submitBtn.disabled = true;
-    ghStatusMessage.style.color = "var(--navy)";
-    ghStatusMessage.innerHTML = "מתחבר ל-GitHub ויוצר Pull Request...";
-
-    const title = document.getElementById('newArtTitle').value;
-    const tag = document.getElementById('newArtTag').value;
-    const date = document.getElementById('newArtDate').value;
-    const excerpt = document.getElementById('newArtExcerpt').value;
-    const content = document.getElementById('newArtContent').value;
-
-    const repoOwner = "halleelyasaf";
-    const repoName = "meir";
-    const branchName = `article-${Date.now()}`;
-
-    try {
-      // 2. Get reference SHA of main branch
-      const refRes = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/git/ref/heads/main`, {
-        headers: { 'Authorization': `token ${token}` }
-      });
-      const refData = await refRes.json();
-      const mainSha = refData.object.sha;
-
-      // 3. Create new branch
-      await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/git/refs`, {
-        method: 'POST',
-        headers: { 
-          'Authorization': `token ${token}`,
-          'Content-Type': 'application/json' 
-        },
-        body: JSON.stringify({
-          ref: `refs/heads/${branchName}`,
-          sha: mainSha
-        })
-      });
-
-      // 4. Get index.html file content
-      const fileRes = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/index.html?ref=main`, {
-        headers: { 'Authorization': `token ${token}` }
-      });
-      const fileData = await fileRes.json();
-      
-      // Decode Base64 UTF-8 string properly
-      const decoder = new TextDecoder('utf-8');
-      const bytes = Uint8Array.from(atob(fileData.content.replace(/\n/g, '')), c => c.charCodeAt(0));
-      let htmlContent = decoder.decode(bytes);
-
-      // 5. Construct new article HTML block
-      const newArticleHTML = `
-        <!-- Article -->
-        <article class="article-card">
-          <div class="article-meta">
-            <span class="article-date" data-he="${date}" data-en="${date}">${date}</span>
-            <span class="article-tag" data-he="${tag}" data-en="${tag}">${tag}</span>
-          </div>
-          <h3 class="article-title" data-he="${title}" data-en="${title}">${title}</h3>
-          <p class="article-excerpt" data-he="${excerpt}" data-en="${excerpt}">${excerpt}</p>
-          <button class="article-toggle btn-text" data-he="קרא עוד ←" data-en="Read more →">קרא עוד ←</button>
-          <div class="article-full">
-            <p data-he="${content}" data-en="${content}">${content}</p>
-            <button class="article-toggle btn-text" data-he="סגור ↑" data-en="Close ↑">סגור ↑</button>
-          </div>
-        </article>
-      `;
-
-      // Inject new article into <div class="articles-grid">
-      const targetTag = '<div class="articles-grid">';
-      htmlContent = htmlContent.replace(targetTag, `${targetTag}\n${newArticleHTML}`);
-
-      // Encode UTF-8 back to Base64
-      const encoder = new TextEncoder();
-      const encodedBytes = encoder.encode(htmlContent);
-      let binaryStr = '';
-      encodedBytes.forEach(b => binaryStr += String.fromCharCode(b));
-      const newContentBase64 = btoa(binaryStr);
-
-      // 6. Commit updated index.html to new branch
-      await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/index.html`, {
-        method: 'PUT',
-        headers: { 
-          'Authorization': `token ${token}`,
-          'Content-Type': 'application/json' 
-        },
-        body: JSON.stringify({
-          message: `Add new article: ${title}`,
-          content: newContentBase64,
-          sha: fileData.sha,
-          branch: branchName
-        })
-      });
-
-      // 7. Create Pull Request
-      const prRes = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/pulls`, {
-        method: 'POST',
-        headers: { 
-          'Authorization': `token ${token}`,
-          'Content-Type': 'application/json' 
-        },
-        body: JSON.stringify({
-          title: `מאמר חדש: ${title}`,
-          head: branchName,
-          base: 'main',
-          body: `בקשה להוספת מאמר חדש:\n\n**כותרת:** ${title}\n**תגית:** ${tag}\n**תאריך:** ${date}`
-        })
-      });
-
-      const prData = await prRes.json();
-
-      ghStatusMessage.style.color = "#065F46";
-      ghStatusMessage.innerHTML = `✓ ה-Pull Request נוצר בהצלחה!<br><a href="${prData.html_url}" target="_blank" style="text-decoration:underline; font-weight:bold;">לחץ כאן לאישור ה-PR ב-GitHub ←</a>`;
-      createArticleForm.reset();
-
-    } catch (err) {
-      console.error(err);
-      ghStatusMessage.style.color = "#DC2626";
-      ghStatusMessage.innerHTML = "אירעה שגיאה. ודא שמפתח ה-GitHub תקין ונסה שוב.";
-    }
-
-    submitBtn.disabled = false;
-  });
-}
 // ===== Automatic GitHub PR Generator via Node Server =====
 const openModalBtn = document.getElementById('openArticleModalBtn');
 const closeModalBtn = document.getElementById('closeArticleModalBtn');
@@ -408,8 +264,16 @@ const createArticleForm = document.getElementById('createArticleForm');
 const ghStatusMessage = document.getElementById('ghStatusMessage');
 
 if (openModalBtn && articleModal) {
-  openModalBtn.addEventListener('click', () => articleModal.classList.add('open'));
-  closeModalBtn.addEventListener('click', () => articleModal.classList.remove('open'));
+  openModalBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    articleModal.classList.add('open');
+  });
+}
+
+if (closeModalBtn && articleModal) {
+  closeModalBtn.addEventListener('click', () => {
+    articleModal.classList.remove('open');
+  });
 }
 
 if (createArticleForm) {
@@ -454,6 +318,3 @@ if (createArticleForm) {
     submitBtn.disabled = false;
   });
 }
-
-
-
