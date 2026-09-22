@@ -1002,6 +1002,11 @@ html[dir="ltr"] .btn-text {
 
 .article-modal.open {
   display: flex;
+}ֿ
+.article-author {
+  font-size: 0.8rem;
+  color: var(--gray);
+  font-weight: 500;
 }
 
 .article-modal-content {
