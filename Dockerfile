@@ -1,11 +1,16 @@
-# Use a lightweight Nginx image based on Alpine Linux
-FROM nginx:alpine
+FROM node:18-alpine
 
-# Copy all project files (index.html, styles.css, script.js, images) to Nginx static HTML directory
-COPY . /usr/share/nginx/html
+WORKDIR /app
 
-# Expose port 80 for web traffic
-EXPOSE 80
+# העתקת קבצי התלויות והתקנתן
+COPY package*.json ./
+RUN npm install
 
-# Run Nginx in the foreground
-CMD ["nginx", "-g", "daemon off;"]
+# העתקת כל הקבצים לפרויקט (קוד השרת, HTML, CSS, JS והתמונה)
+COPY . .
+
+# חשיפת הפורט
+EXPOSE 3000
+
+# הרצת השרת
+CMD ["npm", "start"]

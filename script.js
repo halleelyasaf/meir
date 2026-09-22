@@ -400,6 +400,60 @@ if (createArticleForm) {
     submitBtn.disabled = false;
   });
 }
+// ===== Automatic GitHub PR Generator via Node Server =====
+const openModalBtn = document.getElementById('openArticleModalBtn');
+const closeModalBtn = document.getElementById('closeArticleModalBtn');
+const articleModal = document.getElementById('articleModal');
+const createArticleForm = document.getElementById('createArticleForm');
+const ghStatusMessage = document.getElementById('ghStatusMessage');
+
+if (openModalBtn && articleModal) {
+  openModalBtn.addEventListener('click', () => articleModal.classList.add('open'));
+  closeModalBtn.addEventListener('click', () => articleModal.classList.remove('open'));
+}
+
+if (createArticleForm) {
+  createArticleForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const submitBtn = document.getElementById('submitArticleBtn');
+    submitBtn.disabled = true;
+    ghStatusMessage.style.color = "var(--navy)";
+    ghStatusMessage.innerHTML = "מתחבר ל-GitHub ויוצר Pull Request...";
+
+    const payload = {
+      title: document.getElementById('newArtTitle').value,
+      tag: document.getElementById('newArtTag').value,
+      date: document.getElementById('newArtDate').value,
+      excerpt: document.getElementById('newArtExcerpt').value,
+      content: document.getElementById('newArtContent').value
+    };
+
+    try {
+      const res = await fetch('/api/create-pr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        ghStatusMessage.style.color = "#065F46";
+        ghStatusMessage.innerHTML = `✓ ה-Pull Request נוצר בהצלחה!<br><a href="${data.prUrl}" target="_blank" style="text-decoration:underline; font-weight:bold;">לחץ כאן לאישור ה-PR ב-GitHub ←</a>`;
+        createArticleForm.reset();
+      } else {
+        throw new Error(data.error || 'Failed');
+      }
+    } catch (err) {
+      console.error(err);
+      ghStatusMessage.style.color = "#DC2626";
+      ghStatusMessage.innerHTML = "אירעה שגיאה ביצירת ה-PR. נסה שוב מאוחר יותר.";
+    }
+
+    submitBtn.disabled = false;
+  });
+}
 
 
 
