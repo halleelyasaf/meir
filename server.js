@@ -4,17 +4,17 @@ const path = require('path');
 const app = express();
 app.use(express.json());
 
-// הגשת קובצי האתר הסטטיים (HTML, CSS, JS, תמונות)
+// הגשת קובצי האתר הסטטיים
 app.use(express.static(__dirname));
 
-// Endpoint מאובטח ליצירת Pull Request
+// Endpoint ליצירת ה-Pull Request ב-GitHub
 app.post('/api/create-pr', async (req, res) => {
   const token = process.env.GITHUB_TOKEN;
   if (!token) {
     return res.status(500).json({ error: 'GITHUB_TOKEN missing on server' });
   }
 
-  const { title, tag, date, excerpt, content } = req.body;
+  const { title, author, tag, date, excerpt, content } = req.body;
   const repoOwner = "halleelyasaf";
   const repoName = "meir";
   const branchName = `article-${Date.now()}`;
@@ -44,13 +44,14 @@ app.post('/api/create-pr', async (req, res) => {
     const fileData = await fileRes.json();
     let htmlContent = Buffer.from(fileData.content, 'base64').toString('utf-8');
 
-    // 4. בניית ה-HTML של המאמר החדש
+    // 4. בניית ה-HTML של המאמר החדש (כולל שדה הכותב)
     const newArticleHTML = `
         <!-- Article -->
         <article class="article-card">
           <div class="article-meta">
             <span class="article-date" data-he="${date}" data-en="${date}">${date}</span>
             <span class="article-tag" data-he="${tag}" data-en="${tag}">${tag}</span>
+            <span class="article-author" data-he="מאת: ${author}" data-en="By: ${author}">מאת: ${author}</span>
           </div>
           <h3 class="article-title" data-he="${title}" data-en="${title}">${title}</h3>
           <p class="article-excerpt" data-he="${excerpt}" data-en="${excerpt}">${excerpt}</p>
@@ -90,7 +91,7 @@ app.post('/api/create-pr', async (req, res) => {
         title: `מאמר חדש: ${title}`,
         head: branchName,
         base: 'main',
-        body: `נשלח מאמר חדש מהטופס באתר.`
+        body: `נשלח מאמר חדש מאת ${author}.`
       })
     });
 
