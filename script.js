@@ -229,13 +229,12 @@ if (contactForm) {
 document.querySelectorAll('.article-card').forEach(card => {
   const toggles = card.querySelectorAll('.article-toggle');
   const full = card.querySelector('.article-full');
-  const readMoreBtn = toggles[0]; // the first "Read more" button
+  const readMoreBtn = toggles[0];
 
   toggles.forEach(btn => {
     btn.addEventListener('click', () => {
       const isOpen = full.classList.contains('open');
 
-      // Close all other open articles
       document.querySelectorAll('.article-full.open').forEach(el => {
         if (el !== full) {
           el.classList.remove('open');
@@ -287,6 +286,7 @@ if (createArticleForm) {
 
     const payload = {
       title: document.getElementById('newArtTitle').value,
+      author: document.getElementById('newArtAuthor').value,
       tag: document.getElementById('newArtTag').value,
       date: document.getElementById('newArtDate').value,
       excerpt: document.getElementById('newArtExcerpt').value,
