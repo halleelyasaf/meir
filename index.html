@@ -211,9 +211,55 @@
         </article>
 
         <!-- Article 2 -->
-        <article class="article-card">
-          <div class="article-meta">
-            <span class="article-date" data-he="אוגוסט 2026" data-en="August 2026">אוגוסט 2026</span>
+        <!-- כפתור פתיחת טופס מאמר חדש -->
+      <div class="add-article-action" style="text-align: center; margin-top: 32px;">
+        <button id="openArticleModalBtn" class="btn btn-outline">
+          + הוסף מאמר חדש
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal / חלון קופץ להוספת מאמר -->
+  <div id="articleModal" class="article-modal">
+    <div class="article-modal-content">
+      <button class="article-modal-close" id="closeArticleModalBtn">&times;</button>
+      <h3>הוספת מאמר חדש לאתר</h3>
+      <p class="modal-sub">מילוי הטופס יפתח Pull Request אוטומטי ב-GitHub לאישורך.</p>
+      
+      <form id="createArticleForm">
+        <div class="form-group">
+          <label for="newArtTitle">כותרת המאמר</label>
+          <input type="text" id="newArtTitle" required placeholder="למשל: מיסוי מקרקעין בעסקאות מתנה">
+        </div>
+
+        <div class="form-group">
+          <label for="newArtTag">תגית / נושא</label>
+          <input type="text" id="newArtTag" required placeholder="למשל: מיסוי מקרקעין">
+        </div>
+
+        <div class="form-group">
+          <label for="newArtDate">תאריך</label>
+          <input type="text" id="newArtDate" required placeholder="למשל: אוקטובר 2026">
+        </div>
+
+        <div class="form-group">
+          <label for="newArtExcerpt">תקציר קצר (מוצג בכרטיס)</label>
+          <textarea id="newArtExcerpt" rows="2" required placeholder="תקציר קצר של המאמר..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="newArtContent">תוכן המאמר המלא</label>
+          <textarea id="newArtContent" rows="6" required placeholder="רשום כאן את התוכן המלא של המאמר..."></textarea>
+        </div>
+
+        <button type="submit" id="submitArticleBtn" class="btn btn-primary btn-full">
+          צור Pull Request ב-GitHub
+        </button>
+      </form>
+      <div id="ghStatusMessage" style="margin-top: 15px; font-size: 0.95rem; text-align: center;"></div>
+    </div>
+  </div>
             <span class="article-tag" data-he="העברה ללא תמורה" data-en="Gift Transfer">העברה ללא תמורה</span>
           </div>
           <h3 class="article-title" data-he="העברת דירה במתנה לילדים – מה חשוב לדעת?" data-en="Transferring an apartment as a gift to children – what you need to know">העברת דירה במתנה לילדים – מה חשוב לדעת?</h3>
